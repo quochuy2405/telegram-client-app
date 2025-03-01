@@ -9,6 +9,7 @@ const session = new StringSession(''); // Session sẽ được lưu sau khi đ�
 const client = new TelegramClient(session, Number(apiId), apiHash, {
   connectionRetries: 5,
   useWSS: true,
+
 });
 // Hàm đăng nhập bằng QR code
 async function loginWithQR(callback) {
