@@ -35,80 +35,84 @@ interface QRCodeData {
   expires: number;
 }
 
-const apiId = process.env.REACT_APP_API_ID ? parseInt(process.env.REACT_APP_API_ID, 10) : 0;
-const apiHash = process.env.REACT_APP_API_HASH ? process.env.REACT_APP_API_HASH : "";
+const apiId = process.env.REACT_APP_TELEGRAM_API_ID
+	? parseInt(process.env.REACT_APP_TELEGRAM_API_ID, 10)
+	: 0;
+const apiHash = process.env.REACT_APP_TELEGRAM_API_HASH
+	? process.env.REACT_APP_TELEGRAM_API_HASH
+	: "";
 
-const session = new StringSession('');
+const session = new StringSession("");
 let client = new TelegramClient(session, apiId, apiHash, {
-  connectionRetries: 5,
-  useWSS: false,
+	connectionRetries: 5,
+	useWSS: true,
 });
 
 // Hàm đăng nhập bằng QR code
 async function loginWithQR(callback: (url: string) => void): Promise<TelegramClient> {
-  console.log('Loading QR login...');
-  await client.connect();
+	console.log("Loading QR login...");
+	await client.connect();
 
-  await client.signInUserWithQrCode(
-    { apiId, apiHash },
-    {
-      onError: (err: any) => console.log(`LOGIN ERROR => ${err}`),
-      qrCode: async (qrCode: QRCodeData) => {
-        const url = `tg://login?token=${Buffer.from(qrCode.token).toString('base64')}`;
-        console.log('QR Token:', qrCode.token, 'Expires:', qrCode.expires);
-        callback(url);
-      },
-    }
-  );
+	await client.signInUserWithQrCode(
+		{ apiId, apiHash },
+		{
+			onError: (err: any) => console.log(`LOGIN ERROR => ${err}`),
+			qrCode: async (qrCode: QRCodeData) => {
+				const url = `tg://login?token=${Buffer.from(qrCode.token).toString("base64")}`;
+				console.log("QR Token:", qrCode.token, "Expires:", qrCode.expires);
+				callback(url);
+			},
+		}
+	);
 
-  console.log('You should now be connected.');
-  const sessionString:any = client.session.save();
-  console.log('Save this session string:', sessionString);
-  localStorage.setItem('telegramSession', sessionString );
-  await client.sendMessage('me', { message: 'Hello from React with QR!' });
-  return client;
+	console.log("You should now be connected.");
+	const sessionString: any = client.session.save();
+	console.log("Save this session string:", sessionString);
+	localStorage.setItem("telegramSession", sessionString);
+	await client.sendMessage("me", { message: "Hello from React with QR!" });
+	return client;
 }
 
 // Hàm kiểm tra và tái sử dụng session
 // Hàm kiểm tra và tái sử dụng session
 async function getClient(): Promise<TelegramClient | null> {
-  const savedSession = localStorage.getItem('telegramSession');
-  console.log('Checking saved session:', savedSession);
+	const savedSession = localStorage.getItem("telegramSession");
+	console.log("Checking saved session:", savedSession);
 
-  if (savedSession) {
-    try {
-      const session = new StringSession(savedSession); // Tạo session từ chuỗi đã lưu
-        client = new TelegramClient(session, apiId, apiHash, {
+	if (savedSession) {
+		try {
+			const session = new StringSession(savedSession); // Tạo session từ chuỗi đã lưu
+			client = new TelegramClient(session, apiId, apiHash, {
 				connectionRetries: 5,
-				useWSS: false,
+				useWSS: true,
 			});
 
-      console.log('Setting DC for session...');
-      // client.session.setDC(2, "149.154.167.50", 443);
+			console.log("Setting DC for session...");
+			// client.session.setDC(2, "149.154.167.50", 443);
 
-      console.log('Connecting to Telegram...');
-      await client.connect();
+			console.log("Connecting to Telegram...");
+			await client.connect();
 
-      console.log('Checking authorization...');
-      const isAuthorized = await client.checkAuthorization();
-      console.log('Is authorized:', isAuthorized);
+			console.log("Checking authorization...");
+			const isAuthorized = await client.checkAuthorization();
+			console.log("Is authorized:", isAuthorized);
 
-      if (isAuthorized) {
-        console.log('Session is valid, auto-login successful');
-        return client;
-      } else {
-        console.log('Session invalid, removing from localStorage');
-        localStorage.removeItem('telegramSession');
-      }
-    } catch (error) {
-      console.error('Error during session check:', error);
-      localStorage.removeItem('telegramSession'); // Xóa session nếu có lỗi
-    }
-  } else {
-    console.log('No session found in localStorage');
-  }
-  console.log('Returning null, need to login');
-  return null;
+			if (isAuthorized) {
+				console.log("Session is valid, auto-login successful");
+				return client;
+			} else {
+				console.log("Session invalid, removing from localStorage");
+				localStorage.removeItem("telegramSession");
+			}
+		} catch (error) {
+			console.error("Error during session check:", error);
+			localStorage.removeItem("telegramSession"); // Xóa session nếu có lỗi
+		}
+	} else {
+		console.log("No session found in localStorage");
+	}
+	console.log("Returning null, need to login");
+	return null;
 }
 
 // Hàm lấy danh sách chat
