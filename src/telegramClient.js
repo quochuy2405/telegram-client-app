@@ -1,8 +1,6 @@
 
 const { TelegramClient } = require('telegram');
 const { StringSession } = require('telegram/sessions');
-console.log(process.env.REACT_APP_TELEGRAM_API_ID);  // Check the apiId
-console.log(process.env.REACT_APP_TELEGRAM_API_HASH);
 const apiId = process.env.REACT_APP_TELEGRAM_API_ID;
 const apiHash = process.env.REACT_APP_TELEGRAM_API_HASH;
 

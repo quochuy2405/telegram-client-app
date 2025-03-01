@@ -48,7 +48,9 @@ function App() {
       console.error('Error fetching messages:', err);
     }
   };
-
+  useEffect(() => {
+    handleLogin()
+  }, [])
   return (
     <div className="App">
       {!isLoggedIn ? (
@@ -60,7 +62,7 @@ function App() {
               <QRCodeCanvas value={qrUrl} size={256} />
             </div>
           ) : (
-            <button onClick={handleLogin}>Generate QR Code</button>
+            <>Loading QR code...</>
           )}
         </div>
       ) : (
