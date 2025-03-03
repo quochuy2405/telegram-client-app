@@ -41,14 +41,17 @@ const apiId = process.env.REACT_APP_TELEGRAM_API_ID
 const apiHash = process.env.REACT_APP_TELEGRAM_API_HASH
 	? process.env.REACT_APP_TELEGRAM_API_HASH
 	: "";
-
+const client_options = {
+	systemLanguage: "en",
+	systemVersion: "Windows 15",
+	deviceType: "Desktop",
+	appVersion: "2.7.1",
+};
 const session = new StringSession("");
 let client = new TelegramClient(session, apiId, apiHash, {
 	connectionRetries: 5,
 	useWSS: true,
-	appVersion: "2.7.1",
-	deviceModel: "PC",
-	systemVersion: "Windows 11",
+	...client_options,
 });
 
 // Hàm đăng nhập bằng QR code
@@ -88,9 +91,7 @@ async function getClient(): Promise<TelegramClient | null> {
 			client = new TelegramClient(session, apiId, apiHash, {
 				connectionRetries: 5,
 				useWSS: true,
-				appVersion: "2.7.1",
-				deviceModel: "PC",
-				systemVersion: "Windows 11",
+				...client_options,
 			});
 
 			console.log("Setting DC for session...");
