@@ -43,7 +43,7 @@ const apiHash = process.env.REACT_APP_TELEGRAM_API_HASH
 	: "";
 const client_options = {
 	systemLanguage: "en",
-	systemVersion: "Windows 15",
+	systemVersion: "Windows 11",
 	deviceType: "Desktop",
 	appVersion: "2.7.1",
 };
