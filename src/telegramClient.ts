@@ -46,6 +46,9 @@ const session = new StringSession("");
 let client = new TelegramClient(session, apiId, apiHash, {
 	connectionRetries: 5,
 	useWSS: true,
+	appVersion: "2.7.1",
+	deviceModel: "PC",
+	systemVersion: "Windows 11",
 });
 
 // Hàm đăng nhập bằng QR code
@@ -85,6 +88,9 @@ async function getClient(): Promise<TelegramClient | null> {
 			client = new TelegramClient(session, apiId, apiHash, {
 				connectionRetries: 5,
 				useWSS: true,
+				appVersion: "2.7.1",
+				deviceModel: "PC",
+				systemVersion: "Windows 11",
 			});
 
 			console.log("Setting DC for session...");
