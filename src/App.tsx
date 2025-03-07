@@ -24,7 +24,7 @@ const App: React.FC = () => {
 	const [selectedChat, setSelectedChat] = useState<Chat | null>(null);
 	const [messages, setMessages] = useState<Message[]>([]);
 	const [isLoading, setIsLoading] = useState<boolean>(true); // Thêm state để kiểm tra loading
-	const refScroll = React.useRef<HTMLDivElement>(null);
+	const refScroll = React.useRef<any>(null);
 	// Kiểm tra session và tự động đăng nhập
 	useEffect(() => {
 		const initializeApp = async () => {
@@ -96,9 +96,7 @@ const App: React.FC = () => {
 					isOutgoing: msg.out,
 				}))
 			);
-			setTimeout(() => {
-				refScroll.current?.scrollIntoView({ behavior: "smooth", block: "end" });
-			}, 300);
+			refScroll.current?.scrollToBottom();
 		} catch (err) {
 			console.error("Error fetching messages:", err);
 		}
@@ -106,16 +104,11 @@ const App: React.FC = () => {
 
 	// Xử lý tin nhắn mới từ MessageArea
 	const handleNewMessage = (newMessage: Message) => {
+		console.log("refScroll.current", refScroll.current);
 		setMessages((prevMessages) => [newMessage, ...prevMessages]);
-		setTimeout(() => {
-			refScroll.current?.scrollIntoView({ behavior: "smooth", block: "end" });
-		}, 300);
+		refScroll.current?.scrollToBottom();
 	};
-	useEffect(() => {
-		setTimeout(() => {
-			refScroll.current?.scrollIntoView({ behavior: "smooth", block: "end" });
-		}, 300);
-	}, [messages]);
+
 	// Hiển thị loading khi đang kiểm tra session
 	if (isLoading) {
 		return (

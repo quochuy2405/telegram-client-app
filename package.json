@@ -3,6 +3,8 @@
 	"version": "0.1.0",
 	"private": true,
 	"dependencies": {
+		"@chatscope/chat-ui-kit-react": "^2.0.3",
+		"@chatscope/chat-ui-kit-styles": "^1.4.0",
 		"@tailwindcss/postcss": "^4.0.9",
 		"@testing-library/dom": "^10.4.0",
 		"@testing-library/jest-dom": "^6.6.3",

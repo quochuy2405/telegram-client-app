@@ -1,8 +1,14 @@
-import React, { useState } from "react";
+import {
+	ChatContainer,
+	MainContainer,
+	MessageInput,
+	MessageList,
+} from "@chatscope/chat-ui-kit-react";
+import "@chatscope/chat-ui-kit-styles/dist/default/styles.min.css";
+import React from "react";
 import { sendMessage } from "../telegramClient"; // Import sendMessage
-import Message from "./message";
 import InputMessage from "./input-message";
-
+import Message from "./message";
 interface Chat {
 	id: string;
 	title: string;
@@ -79,26 +85,31 @@ const MessageArea: React.FC<MessageAreaProps> = ({
 					</div>
 
 					{/* Messages */}
-					<div className='flex-1 p-4 overflow-y-auto'>
-						{messages
-							.sort((a: any, b: any) => a.date - b.date)
-							.map((msg) => (
-								<Message
-									key={msg.id}
-									id={msg.id}
-									text={msg.text}
-									sender={msg.sender}
-									date={msg.date}
-									isOutgoing={msg.isOutgoing}
+					<div style={{ position: "relative", height: "calc(100% - 56px)" }}>
+						<MainContainer>
+							<ChatContainer>
+								<MessageList ref={refScroll}>
+									{messages
+										.sort((a, b) => a.id - b.id)
+										.map((message) => (
+											<Message
+												key={message.id}
+												id={message.id}
+												text={message.text}
+												sender={message.sender}
+												date={message.date}
+												isOutgoing={message.isOutgoing}
+											/>
+										))}
+								</MessageList>
+								<MessageInput
+									onSend={(_, textContent) => handleSendMessage(textContent, () => {})}
+									placeholder='Type message here'
 								/>
-							))}
-						<div
-							style={{ float: "left", clear: "both" }}
-							ref={(el) => {
-								refScroll.current = el;
-							}}></div>
+							</ChatContainer>
+						</MainContainer>
 					</div>
-					<InputMessage handleSendMessage={handleSendMessage} />
+
 					{/* Input */}
 				</>
 			) : (
