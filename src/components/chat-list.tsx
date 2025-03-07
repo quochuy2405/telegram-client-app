@@ -5,6 +5,7 @@ interface Chat {
 	title: string;
 	unreadCount: number;
 	avatar?: string; // Optional avatar URL
+	color?: string;
 }
 
 interface ChatListProps {
@@ -26,7 +27,9 @@ const ChatList: React.FC<ChatListProps> = ({ chats, selectedChat, onChatSelect }
 
 	return (
 		<div className='w-1/5 border-r border-gray-200 h-screen overflow-y-auto'>
-			<h1 className='flex items-center justify-center font-semibold text-gray-700 p-4 border-b border-gray-200 text-sm'>Chats</h1>
+			<h1 className='flex items-center justify-center font-semibold text-gray-700 p-4 border-b border-gray-200 text-sm'>
+				Chats
+			</h1>
 			<ul className='divide-y divide-gray-200'>
 				{chats.map((chat) => (
 					<li
@@ -40,9 +43,15 @@ const ChatList: React.FC<ChatListProps> = ({ chats, selectedChat, onChatSelect }
 							{/* Avatar Image or Placeholder */}
 							<div className='w-10 h-10 rounded-full overflow-hidden mr-4'>
 								{chat.avatar ? (
-									<img src={chat.avatar} alt={chat.title} className='w-full h-full object-cover' />
+									<img
+										src={`data:image/jpeg;base64,${chat.avatar}`}
+										alt={chat.title}
+										className='w-full h-full object-cover'
+									/>
 								) : (
-									<div className='w-full h-full bg-blue-500 text-white flex items-center justify-center'>
+									<div
+										className={`w-full h-full flex items-center justify-center bg-gray-200 text-white rounded-full`}
+										style={{ backgroundColor: chat.color ?? "#0088cc" }}>
 										<span className='text-xs font-semibold'>{getAvatar(chat.title)}</span>
 									</div>
 								)}

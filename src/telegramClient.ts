@@ -34,7 +34,6 @@ interface QRCodeData {
   token: Buffer;
   expires: number;
 }
-
 const apiId = process.env.REACT_APP_TELEGRAM_API_ID
 	? parseInt(process.env.REACT_APP_TELEGRAM_API_ID, 10)
 	: 0;
@@ -123,15 +122,45 @@ async function getClient(): Promise<TelegramClient | null> {
 }
 
 // Hàm lấy danh sách chat
+const defaultColors = ["#FF5733", "#33FF57", "#3357FF", "#FF33A1", "#FFD700", "#6A0DAD"];
+
+function getColorAndInitial(title: string): { color: string; initial: string } {
+	const initial = title.charAt(0).toUpperCase();
+	const colorIndex = Math.abs(title.charCodeAt(0) % defaultColors.length);
+	return { color: defaultColors[colorIndex], initial };
+}
 async function getChats(): Promise<Chat[]> {
 	await client.connect();
-	const chats = await client.getDialogs({});
-	return chats.map((chat: any) => ({
-		id: chat?.id.toString(),
-		title: chat.title,
-		unreadCount: chat.unreadCount,
-	}));
+	const chats = await client.getDialogs({ folder: 0 });
+
+	const chatDetails = await Promise.all(
+		chats.map(async (chat: any) => {
+			let avatarBuffer: Buffer | null = null;
+			let color: string | null = null;
+
+			try {
+				avatarBuffer = (await client.downloadProfilePhoto(chat.entity, {
+					isBig: false,
+				})) as Buffer;
+			} catch (error) {
+				console.error(`Không thể tải avatar cho chat ${chat.title}:`, error);
+			}
+
+			color = getColorAndInitial(chat.title).color;
+
+			return {
+				id: chat?.id.toString(),
+				title: chat.title,
+				unreadCount: chat.unreadCount,
+				avatar: avatarBuffer ? avatarBuffer.toString("base64") : null,
+				color: color, // Thêm trường color
+			};
+		})
+	);
+
+	return chatDetails;
 }
+
 
 // Hàm gửi tin nhắn văn bản
 async function sendMessage(chatId: string, message: string): Promise<SendResult> {
