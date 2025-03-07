@@ -4,7 +4,7 @@ interface MessageProps {
 	id: number;
 	text: string;
 	sender?: string;
-	date: string;
+	date: any;
 	isOutgoing?: boolean; // To distinguish sent/received messages
 }
 
@@ -24,7 +24,9 @@ const Message: React.FC<MessageProps> = ({ id, text, sender, date, isOutgoing })
 				{/* Message text */}
 				<p className='text-xs font-normal break-words'>{text}</p>
 				{/* Timestamp (time of message) */}
-				<span className='text-xs text-gray-500 block text-right mt-2'>{date}</span>
+				<span className='text-xs text-gray-500 block text-right mt-2'>
+					{new Date(date).toLocaleTimeString("en-US")}
+				</span>
 			</div>
 		</div>
 	);

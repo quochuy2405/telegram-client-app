@@ -1,32 +1,36 @@
 import React, { useState } from "react";
 import { sendMessage } from "../telegramClient"; // Import sendMessage
 import Message from "./message";
+import InputMessage from "./input-message";
 
 interface Chat {
 	id: string;
 	title: string;
-  unreadCount: number;
-  
+	unreadCount: number;
 }
 
 interface MessageData {
 	id: number;
 	text: string;
 	sender?: string;
-	date: string;
+	date: any;
 	isOutgoing?: boolean;
 }
 
 interface MessageAreaProps {
 	selectedChat: Chat | null;
+	refScroll: React.RefObject<HTMLDivElement | null>;
 	messages: MessageData[];
 	onNewMessage: (message: MessageData) => void; // Callback để cập nhật tin nhắn mới
 }
 
-const MessageArea: React.FC<MessageAreaProps> = ({ selectedChat, messages, onNewMessage }) => {
-	const [inputText, setInputText] = useState<string>("");
-
-	const handleSendMessage = async () => {
+const MessageArea: React.FC<MessageAreaProps> = ({
+	selectedChat,
+	refScroll,
+	messages,
+	onNewMessage,
+}) => {
+	const handleSendMessage = async (inputText: string, onClear?: () => void) => {
 		if (!selectedChat || !inputText.trim()) return;
 
 		try {
@@ -35,11 +39,11 @@ const MessageArea: React.FC<MessageAreaProps> = ({ selectedChat, messages, onNew
 				const newMessage: MessageData = {
 					id: result.messageId!,
 					text: inputText,
-					date: new Date().toLocaleTimeString(),
+					date: Date.now(),
 					isOutgoing: true,
 				};
 				onNewMessage(newMessage); // Thêm tin nhắn vừa gửi vào danh sách
-				setInputText(""); // Xóa input sau khi gửi
+				onClear?.();
 			}
 		} catch (error) {
 			console.error("Error sending message:", error);
@@ -76,36 +80,26 @@ const MessageArea: React.FC<MessageAreaProps> = ({ selectedChat, messages, onNew
 
 					{/* Messages */}
 					<div className='flex-1 p-4 overflow-y-auto'>
-						{messages.reverse().map((msg) => (
-							<Message
-								key={msg.id}
-								id={msg.id}
-								text={msg.text}
-								sender={msg.sender}
-								date={msg.date}
-								isOutgoing={msg.isOutgoing}
-							/>
-						))}
+						{messages
+							.sort((a: any, b: any) => a.date - b.date)
+							.map((msg) => (
+								<Message
+									key={msg.id}
+									id={msg.id}
+									text={msg.text}
+									sender={msg.sender}
+									date={msg.date}
+									isOutgoing={msg.isOutgoing}
+								/>
+							))}
+						<div
+							style={{ float: "left", clear: "both" }}
+							ref={(el) => {
+								refScroll.current = el;
+							}}></div>
 					</div>
-
+					<InputMessage handleSendMessage={handleSendMessage} />
 					{/* Input */}
-					<div className='bg-white p-4 border-t border-gray-200 flex items-center'>
-						<input
-							type='text'
-							placeholder='Type a message'
-							value={inputText}
-							onChange={(e) => setInputText(e.target.value)}
-							onKeyPress={(e) => e.key === "Enter" && handleSendMessage()} // Gửi khi nhấn Enter
-							className='flex-1 p-2 rounded-lg border border-gray-300 focus:outline-none focus:border-[#0088cc]'
-						/>
-						<button
-							onClick={handleSendMessage}
-							className='ml-2 bg-[#0088cc] text-white p-2 rounded-full hover:bg-[#0077b3]'>
-							<svg className='w-5 h-5' fill='currentColor' viewBox='0 0 24 24'>
-								<path d='M2.01 21L23 12 2.01 3 2 10l15 2-15 2z' />
-							</svg>
-						</button>
-					</div>
 				</>
 			) : (
 				<div className='flex-1 flex items-center font-semibold justify-center text-white'>

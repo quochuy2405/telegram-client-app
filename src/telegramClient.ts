@@ -124,120 +124,161 @@ async function getClient(): Promise<TelegramClient | null> {
 
 // Hàm lấy danh sách chat
 async function getChats(): Promise<Chat[]> {
-  await client.connect();
-  const chats = await client.getDialogs({});
-  return chats.map((chat:any) => ({
-    id: chat?.id.toString(),
-    title: chat.title,
-    unreadCount: chat.unreadCount,
-  }));
+	await client.connect();
+	const chats = await client.getDialogs({});
+	return chats.map((chat: any) => ({
+		id: chat?.id.toString(),
+		title: chat.title,
+		unreadCount: chat.unreadCount,
+	}));
 }
 
 // Hàm gửi tin nhắn văn bản
 async function sendMessage(chatId: string, message: string): Promise<SendResult> {
-  try {
-    await client.connect();
-    const result = await client.sendMessage(chatId, { message });
-    return {
-      success: true,
-      messageId: result.id,
-      date: result.date,
-    };
-  } catch (error) {
-    console.error('Send message error:', error);
-    return { success: false, error };
-  }
+	try {
+		await client.connect();
+		const result = await client.sendMessage(chatId, { message });
+		return {
+			success: true,
+			messageId: result.id,
+			date: result.date,
+		};
+	} catch (error) {
+		console.error("Send message error:", error);
+		return { success: false, error };
+	}
 }
 
 // Hàm gửi tin nhắn với ảnh
-async function sendPhoto(chatId: string, photoPath: string, caption: string = ''): Promise<SendResult> {
-  try {
-    await client.connect();
-    const result = await client.sendFile(chatId, {
-      file: photoPath,
-      caption,
-      forceDocument: false,
-    });
-    return {
-      success: true,
-      messageId: result.id,
-      date: result.date,
-    };
-  } catch (error) {
-    console.error('Send photo error:', error);
-    return { success: false, error };
-  }
+async function sendPhoto(
+	chatId: string,
+	photoPath: string,
+	caption: string = ""
+): Promise<SendResult> {
+	try {
+		await client.connect();
+		const result = await client.sendFile(chatId, {
+			file: photoPath,
+			caption,
+			forceDocument: false,
+		});
+		return {
+			success: true,
+			messageId: result.id,
+			date: result.date,
+		};
+	} catch (error) {
+		console.error("Send photo error:", error);
+		return { success: false, error };
+	}
 }
 
 // Hàm lắng nghe tin nhắn mới
 function listenNewMessages(callback: (message: Message) => void): void {
-  client.addEventHandler((update) => {
-    if (update.className === 'UpdateNewMessage' || update.className === 'UpdateNewChannelMessage') {
-      const message = update.message;
-      const chatId = message.peerId.chatId || message.peerId.userId || message.peerId.channelId;
+	client.addEventHandler((update) => {
+		console.log("update", update);
+		if (["UpdateNewMessage", "UpdateNewChannelMessage"].includes(update.className)) {
+			const message = update;
+			console.log("messageSSS", message);
+			const chatId =
+				message?.peerId?.chatId || message?.peerId?.userId || message?.peerId?.channelId;
 
-      const newMessage: Message = {
-        id: message.id,
-        chatId: chatId.toString(),
-        text: message.message,
-        date: new Date(message.date * 1000),
-        isOutgoing: message.out,
-        senderId: message.fromId?.userId?.toString(),
-      };
+			const newMessage: Message = {
+				id: message.id,
+				chatId: chatId?.toString(),
+				text: message.message,
+				date: message.date,
+				isOutgoing: message.out,
+				senderId: message.fromId?.userId?.toString(),
+			};
+			callback(newMessage);
+			if (!message.out) {
+				showNotification({
+					chatId: chatId?.toString(),
+					text: message.message,
+					sender: message.fromId?.userId?.toString(),
+				});
+			}
+		}
+		if ("UpdateShortMessage" === update.className) {
+			const message = update;
+			console.log("messageSSS", message);
+			const chatId =
+				message?.peerId?.chatId || message?.peerId?.userId || message?.peerId?.channelId;
 
-      if (!message.out) {
-        showNotification({
-          chatId: chatId.toString(),
-          text: message.message,
-          sender: message.fromId?.userId?.toString(),
-        });
-      }
-
-      callback(newMessage);
-    }
-  });
+			const newMessage: Message = {
+				id: message.id,
+				chatId: chatId?.toString(),
+				text: message.message,
+				date: message.date,
+				isOutgoing: message.out,
+				senderId: message.fromId?.userId?.toString(),
+			};
+			callback(newMessage);
+			if (!message.out) {
+				showNotification({
+					chatId: chatId?.toString(),
+					text: message.message,
+					sender: message.fromId?.userId?.toString(),
+				});
+			}
+		}
+	});
 }
 
 // Hàm hiển thị thông báo
-function showNotification({ chatId, text, sender }: { chatId: string; text: string; sender?: string }): void {
-  if (Notification.permission === 'granted') {
-    new Notification('New Telegram Message', {
-      body: `${sender}: ${text}`,
-      tag: chatId,
-      icon: '/telegram-icon.png',
-    });
-  } else if (Notification.permission !== 'denied') {
-    Notification.requestPermission().then(permission => {
-      if (permission === 'granted') {
-        showNotification({ chatId, text, sender });
-      }
-    });
-  }
+function showNotification({
+	chatId,
+	text,
+	sender,
+}: {
+	chatId: string;
+	text: string;
+	sender?: string;
+}): void {
+	if (Notification.permission === "granted") {
+		new Notification("New Telegram Message", {
+			body: `${sender}: ${text}`,
+			tag: chatId,
+			icon: "/telegram-icon.png",
+		});
+	} else if (Notification.permission !== "denied") {
+		Notification.requestPermission().then((permission) => {
+			if (permission === "granted") {
+				showNotification({ chatId, text, sender });
+			}
+		});
+	}
 }
 
 // Hàm lấy lịch sử tin nhắn
-async function getMessages(chatId: string, limit: number = 50) {
-  try {
-    await client.connect();
-    const messages = await client.getMessages(chatId, { limit });
-    return messages?.map((msg:any) => ({
-      id: msg?.id,
-      chatId: chatId.toString(),
-      text: msg?.message,
-      date: new Date(msg?.date * 1000),
-      isOutgoing: !!msg?.out,
-      senderId: msg?.fromId?.userId?.toString(),
-      media: msg?.media ? {
-        type: msg?.media.className,
-        photo: msg.media.photo ? {
-          id: msg.media.photo.id.toString(),
-        } : null,
-      } : null,
-    }));
-  } catch (error) {
-    console.error('Get messages error:', error);
-    return [];
-  }
+async function getMessages(chatId: string, limit: number = 30) {
+	try {
+		await client.connect();
+		const messages = await client.getMessages(chatId, { limit });
+		console.log("getMessages", messages);
+		return messages?.map((msg: any) => ({
+			id: msg?.id,
+			chatId: chatId.toString(),
+			text: msg?.message,
+			date: msg?.date,
+			isOutgoing: !!msg?.out,
+			senderId: msg?.fromId?.userId?.toString(),
+			media: msg?.media
+				? {
+						type: msg?.media.className,
+						photo: msg.media.photo
+							? {
+									id: msg.media.photo.id.toString(),
+							  }
+							: null,
+				  }
+				: null,
+		}));
+	} catch (error) {
+		console.error("Get messages error:", error);
+		return [];
+	}
 }
 
 // Hàm đánh dấu tin nhắn đã đọc
