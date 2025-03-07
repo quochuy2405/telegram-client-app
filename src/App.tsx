@@ -68,9 +68,9 @@ const App: React.FC = () => {
 				]);
 			}
 
-			setTimeout(() => {
-				refScroll.current?.scrollIntoView({ behavior: "smooth", block: "end" });
-			}, 300);
+      if (!newMessage.isOutgoing) {
+				refScroll.current?.scrollToBottom();
+			}
 			// Cập nhật unreadCount nếu tin nhắn đến từ chat khác
 			setChats((prevChats) =>
 				prevChats.map((chat) =>
